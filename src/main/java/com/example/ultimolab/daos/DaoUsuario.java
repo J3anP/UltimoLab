@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class DaoUsuario extends DaoBase{
     public Usuario obtenerUsuario(int idUsuario){
@@ -76,29 +77,29 @@ public class DaoUsuario extends DaoBase{
             throw new RuntimeException(e);
         }
     }
-    public boolean login(String usuario, String contrasena){
+    public boolean login(String correo, String password){
 
         boolean valido = false;
-        contrasena = Sha256.cipherPassword(contrasena);
+        password = Sha256.cipherPassword(password);
 
-        String sql = "SELECT usuario, contrasena FROM jugadores WHERE usuario = ? AND contrasena = ? ";
+        String sql = "SELECT correo, password FROM usuario WHERE correo = ? AND password = ? ";
 
 
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)){
 
-            pstmt.setString(1, usuario);
-            pstmt.setString(2, contrasena);
+            pstmt.setString(1, correo);
+            pstmt.setString(2, password);
 
             try(ResultSet rs = pstmt.executeQuery()){
 
                 while(rs.next()){
-                    String usuarioDb = rs.getString(1);
-                    String contrasenaDb = rs.getString(2);
+                    String correoDb = rs.getString(1);
+                    String passwordDb = rs.getString(2);
 
-                    if (usuarioDb == null || contrasenaDb == null){
+                    if (correoDb == null || passwordDb == null){
                         valido = false;
-                    } else if (usuarioDb.equals(usuario) && contrasenaDb.equals(contrasena)){
+                    } else if (correoDb.equals(correo) && passwordDb.equals(password)){
                         valido = true;
                     }
                 }
@@ -117,6 +118,56 @@ public class DaoUsuario extends DaoBase{
             administrador = obtenerUsuario(idAdministrador);
         }
         return  administrador;
+    }
+
+    //Metodos del decano:
+
+    public void decanoRegistraDocente(String nombre, String correo, String contrasena){
+        contrasena = Sha256.cipherPassword(contrasena);
+
+        String sql = "insert into usuario(nombre,correo,password,idrol,cantidad_ingresos,fecha_registro,fecha_edicion) values(?,?,?,?,0,now(),now())";
+        try(Connection conn=getConnection(); PreparedStatement pstmt= conn.prepareStatement(sql)){
+            pstmt.setString(1,nombre);
+            pstmt.setString(2,correo);
+            pstmt.setString(3,contrasena);
+            pstmt.setInt(4,4);
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public void decanoEditaDocente(String nombre, int idDocente){
+        String sql = "update usuario set nombre = ? where idusuario = ?)";
+        try(Connection conn=getConnection(); PreparedStatement pstmt= conn.prepareStatement(sql)){
+            pstmt.setString(1,nombre);
+            pstmt.setInt(2,idDocente);
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public void decanoEliminaDocente(int idDocente){ //solo se elimina si  el profesor no tiene curso
+        DaoCursoHasDocente daoCursoHasDocente = new DaoCursoHasDocente();
+        if(daoCursoHasDocente.obtenerCursosPorDocente(idDocente).isEmpty()){
+            String sql = "delete from usuario where idusuario = ?";
+            try(Connection conn=getConnection(); PreparedStatement pstmt= conn.prepareStatement(sql)){
+                pstmt.setInt(1,idDocente);
+                pstmt.executeUpdate();
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public ArrayList<Usuario> listaDocente(){
+
+
+                return null;
     }
 
 

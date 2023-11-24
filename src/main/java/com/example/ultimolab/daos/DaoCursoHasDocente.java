@@ -1,6 +1,7 @@
 package com.example.ultimolab.daos;
 import com.example.ultimolab.beans.CursoHasDocente;
 import com.example.ultimolab.beans.Curso;
+import com.example.ultimolab.beans.Evaluaciones;
 import com.example.ultimolab.beans.Usuario;
 
 import java.sql.Connection;
@@ -28,4 +29,5 @@ public class DaoCursoHasDocente extends DaoBase{
         }
         return cursos;
     }
+
 }

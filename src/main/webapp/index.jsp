@@ -95,7 +95,7 @@
 <body>
 <div class="login-box">
     <h2>Bienvenido</h2>
-    <form method="post" action="<%=request.getContextPath()%>/LoginServlet?action=login" class = "form">
+    <form method="post" action="<%=request.getContextPath()%>/login?action=login" class = "form">
         <div class="user-box">
             <input id = "correo" type="email" name="correo" required="">
             <label for="correo">Correo Electrónico</label>

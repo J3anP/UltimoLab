@@ -1,5 +1,6 @@
 package com.example.ultimolab.servlets;
 
+import com.example.ultimolab.daos.DaoCurso;
 import com.example.ultimolab.daos.DaoUsuario;
 import com.example.ultimolab.beans.Curso;
 import com.example.ultimolab.daos.DaoCursoHasDocente;
@@ -18,15 +19,19 @@ public class DocenteServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action") == null ? "default" : request.getParameter("action");
-
+        DaoCurso daoCurso = new DaoCurso();
         DaoCursoHasDocente daoCursoHasDocente = new DaoCursoHasDocente();
         HttpSession session = request.getSession(false);
         Usuario usuario = (Usuario) session.getAttribute("usuario");
         switch (action){
             case "default":
                 if(session.getAttribute("usuario") != null){
-                    ArrayList<Curso> cursos = daoCursoHasDocente.obtenerCursosPorDocente(usuario.getIdUsuario());
+                    //una navbar de cursos que tiene
+                    ArrayList<Curso> listaCursos = daoCurso.listarCursosDocente(usuario.getIdUsuario());
+                    request.setAttribute("listaCursos",listaCursos);
 
+
+                    request.getRequestDispatcher("/VistaDocente/lista.jsp").forward(request,response);
                 }else{
 
                 }

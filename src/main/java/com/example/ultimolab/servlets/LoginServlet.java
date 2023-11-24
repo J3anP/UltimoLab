@@ -35,12 +35,12 @@ public class LoginServlet extends HttpServlet {
             case "default":
                 break;
             case "login":
-                String usuarioInput = request.getParameter("correo");
+                String correoInput = request.getParameter("correo");
                 String contrasenaInput = request.getParameter("contrasena");
 
-                if (daoUsuario.login(usuarioInput, contrasenaInput)){
+                if (daoUsuario.login(correoInput, contrasenaInput)){
 
-                    Usuario usuario = daoUsuario.obtenerUsuarioCorreo(usuarioInput);
+                    Usuario usuario = daoUsuario.obtenerUsuarioCorreo(correoInput);
                     HttpSession session = request.getSession();
 
                     if(usuario.getRol().getNombre().equals("docente")){
