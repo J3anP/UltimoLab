@@ -5,7 +5,7 @@ import java.sql.*;
 public class DaoSemestre extends DaoBase{
 
     public Semestre obtenerSemestre(int idSemestre){
-        String sql = "select * from semestre where idsemestre = 1";
+        String sql = "select * from semestre where idsemestre = ?";
         Semestre semestre = new Semestre();
         DaoUsuario daoUsuario = new DaoUsuario();
         try (Connection conn = getConnection();
@@ -31,5 +31,22 @@ public class DaoSemestre extends DaoBase{
             throw new RuntimeException(e);
         }
         return semestre;
+    }
+    public Integer obtenerIdSemestrePorNombre(String nombre){
+        Integer idSemestre = 0;
+        String sql = "select idsemestre from semestre where nombre = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1,nombre);
+
+            try(ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    idSemestre = rs.getInt("idsemestre");
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return idSemestre;
     }
 }

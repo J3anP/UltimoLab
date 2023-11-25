@@ -1,4 +1,6 @@
 package com.example.ultimolab.daos;
+import com.example.ultimolab.beans.Curso;
+import com.example.ultimolab.beans.CursoHasDocente;
 import com.example.ultimolab.beans.Usuario;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,7 +12,7 @@ public class DaoUsuario extends DaoBase{
     public Usuario obtenerUsuario(int idUsuario){
         Usuario usuario = new Usuario();
         DaoRol dRol = new DaoRol();
-        String sql = "select * from jugadores where idusuario = ?";
+        String sql = "select * from usuario where idusuario = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -23,9 +25,11 @@ public class DaoUsuario extends DaoBase{
                     usuario.setCorreo(rs.getString("correo"));
                     usuario.setPassword(rs.getString("password"));
                     usuario.setRol(dRol.obtenerRol(rs.getInt("idrol")));
-                    usuario.setFechaRegistro(rs.getDate("usuario"));
-                    //usuario.setContrasena(rs.getString("contrasena"));
-                    //usuario.setListaNegra(rs.getBoolean("ban"));
+                    usuario.setFechaUltimo(rs.getDate("ultimo_ingreso"));
+                    usuario.setCantIngresos(rs.getInt("cantidad_ingresos"));
+                    usuario.setFechaRegistro(rs.getDate("fecha_registro"));
+                    usuario.setFechaEdicion(rs.getDate("fecha_edicion"));
+
                 }
                 else {
                     usuario = null;
@@ -164,10 +168,33 @@ public class DaoUsuario extends DaoBase{
         }
     }
 
-    public ArrayList<Usuario> listaDocente(){
+    public ArrayList<CursoHasDocente> listaDocenteDeDecano(int idDecano){
+        DaoRol daoRol = new DaoRol();
+        ArrayList<CursoHasDocente> listaDocentes = new ArrayList<>();
+        String sql = "select * from usuario u left join curso_has_docente chd on chd.iddocente = u.idusuario where idrol = 4";
+        try(Connection conn=this.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql)){
+            try(ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    CursoHasDocente docente = new CursoHasDocente();
 
+                    docente.getDocente().setIdUsuario(rs.getInt("idusuario"));
+                    docente.getDocente().setNombre(rs.getString("nombre"));
+                    docente.getDocente().setCorreo(rs.getString("correo"));
+                    docente.getDocente().setRol(daoRol.obtenerRol(rs.getInt("idrol")));
+                    docente.getDocente().setFechaUltimo(rs.getDate("ultimo_ingreso"));
+                    docente.getDocente().setFechaRegistro(rs.getDate("fecha_registro"));
+                    docente.getDocente().setFechaEdicion(rs.getDate("fecha_edicion"));
+                    docente.getDocente().setCantIngresos(rs.getInt("cantidad_ingresos"));
+                    docente.getCurso().setIdCurso(rs.getInt("idcurso"));
+                    listaDocentes.add(docente);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return listaDocentes;
 
-                return null;
     }
 
 

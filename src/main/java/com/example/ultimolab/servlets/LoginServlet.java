@@ -52,7 +52,6 @@ public class LoginServlet extends HttpServlet {
                     }else if(usuario.getRol().getNombre().equals("decano")){
                         session.setAttribute("usuario", usuario);
                         session.setMaxInactiveInterval(1800);
-
                         response.sendRedirect("/UltimoLab/decano");
                         daoUsuario.actualizarIngreso(usuario.getIdUsuario());
                     }else{

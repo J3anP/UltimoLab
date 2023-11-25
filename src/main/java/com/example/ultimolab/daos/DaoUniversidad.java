@@ -20,7 +20,7 @@ public class DaoUniversidad extends DaoBase{
                     universidad.setIdUniversidad(rs.getInt("iduniversidad"));
                     universidad.setNombre(rs.getString("nombre"));
                     universidad.setLogoUrl(rs.getString("logo_url"));
-                    universidad.setAdministrador(daoUsuario.obtenerAdministrador(rs.getInt("idusuario")));
+                    universidad.setAdministrador(daoUsuario.obtenerAdministrador(rs.getInt("idadministrador")));
                     universidad.setFechaRegistro(rs.getDate("fecha_registro"));
                     universidad.setFechaEdicion(rs.getDate("fecha_edicion"));
                 }

@@ -44,15 +44,14 @@ public class DaoEvaluaciones extends DaoBase{
         return evaluaciones;
     }
 
-    public ArrayList<Evaluaciones> listarEvaluaciones(int idCurso, int idSemestre){
+    public ArrayList<Evaluaciones> listarEvaluaciones(int idDocente){
         ArrayList<Evaluaciones> listaEvaluaciones = new ArrayList<>();
         DaoCurso daoCurso = new DaoCurso();
         DaoSemestre daoSemestre  = new DaoSemestre();
-        String sql = "select * from evaluaciones where idcurso = ? and idsemestre = ?";
+        String sql = "select * from evaluaciones e left join curso_has_docente chd on chd.idcurso = e.idcurso where chd.iddocente = ?";
         try(Connection conn=this.getConnection();
             PreparedStatement pstmt = conn.prepareStatement(sql)){
-            pstmt.setInt(1,idCurso);
-            pstmt.setInt(2,idSemestre);
+            pstmt.setInt(1,idDocente);
             try(ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     Evaluaciones evaluaciones = new Evaluaciones();
@@ -75,7 +74,7 @@ public class DaoEvaluaciones extends DaoBase{
     }
 
     public void editarEvaluacion(int idEvaluaciones, String nombre, String codigo, String correo, int nota){
-        String sql = "update evaluaciones set nombre_estudiante =?, codigo_estudiante = ?,correo_estudiante = ?, nota = ? where idevaluaciones = ?";
+        String sql = "update evaluaciones set nombre_estudiante =?, codigo_estudiante = ?,correo_estudiante = ?, nota = ?, fecha_edicion = now() where idevaluaciones = ?";
         try(Connection conn=getConnection(); PreparedStatement pstmt= conn.prepareStatement(sql)){
             pstmt.setString(1,nombre);
             pstmt.setString(2,codigo);
@@ -89,7 +88,7 @@ public class DaoEvaluaciones extends DaoBase{
         }
     }
 
-    public void registrarNota(String nombre, String codigo, String correo, int nota, int idCurso,int idSemestre){
+    public void registrarEvaluacion(String nombre, String codigo, String correo, int nota, int idCurso,int idSemestre){
         String sql = "insert into evaluaciones(nombre_estudiante,codigo_estudiante,correo_estudiante,nota,idcurso,idsemestre,fecha_registro,fecha_edicion) values (?,?,?,?,?,?,now(),now())";
         try(Connection conn=getConnection(); PreparedStatement pstmt= conn.prepareStatement(sql)){
             pstmt.setString(1,nombre);
@@ -104,5 +103,19 @@ public class DaoEvaluaciones extends DaoBase{
             throw new RuntimeException(e);
         }
 
+    }
+    public void eliminarEvaluacion(int idEvaluacion){
+
+        boolean habilitado = obtenerEvaluaciones(idEvaluacion).getSemestre().getHabilitado();
+        if(habilitado){
+            String sql = "delete from evaluaciones where idevaluaciones = ?";
+            try(Connection conn=getConnection(); PreparedStatement pstmt= conn.prepareStatement(sql)){
+                pstmt.setInt(1,idEvaluacion);
+                pstmt.executeUpdate();
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }
