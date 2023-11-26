@@ -2,6 +2,7 @@ package com.example.ultimolab.daos;
 import com.example.ultimolab.beans.Curso;
 import com.example.ultimolab.beans.CursoHasDocente;
 import com.example.ultimolab.beans.Usuario;
+import com.example.ultimolab.beans.Facultad;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -142,7 +143,7 @@ public class DaoUsuario extends DaoBase{
         }
     }
     public void decanoEditaDocente(String nombre, int idDocente){
-        String sql = "update usuario set nombre = ? where idusuario = ?)";
+        String sql = "update usuario set nombre = ? where idusuario = ?";
         try(Connection conn=getConnection(); PreparedStatement pstmt= conn.prepareStatement(sql)){
             pstmt.setString(1,nombre);
             pstmt.setInt(2,idDocente);
@@ -168,25 +169,23 @@ public class DaoUsuario extends DaoBase{
         }
     }
 
-    public ArrayList<CursoHasDocente> listaDocenteDeDecano(int idDecano){
-        DaoRol daoRol = new DaoRol();
-        ArrayList<CursoHasDocente> listaDocentes = new ArrayList<>();
-        String sql = "select * from usuario u left join curso_has_docente chd on chd.iddocente = u.idusuario where idrol = 4";
+    public ArrayList<Usuario> listaDocenteDeDecano(int idDecano){
+
+        ArrayList<Usuario> listaDocentes = new ArrayList<>();
+        String sql = "select * from usuario u left join rol r on u.idrol = r.idrol left join curso_has_docente chd on u.idusuario = chd.iddocente left join curso c on chd.idcurso = c.idcurso left join facultad f on c.idfacultad = f.idfacultad left join facultad_has_decano fhd on f.idfacultad = fhd.idfacultad where (r.nombre='docente' and u.idusuario not in (select iddocente from curso_has_docente)) or fhd.iddecano=?";
         try(Connection conn=this.getConnection();
             PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setInt(1,idDecano);
             try(ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    CursoHasDocente docente = new CursoHasDocente();
-
-                    docente.getDocente().setIdUsuario(rs.getInt("idusuario"));
-                    docente.getDocente().setNombre(rs.getString("nombre"));
-                    docente.getDocente().setCorreo(rs.getString("correo"));
-                    docente.getDocente().setRol(daoRol.obtenerRol(rs.getInt("idrol")));
-                    docente.getDocente().setFechaUltimo(rs.getDate("ultimo_ingreso"));
-                    docente.getDocente().setFechaRegistro(rs.getDate("fecha_registro"));
-                    docente.getDocente().setFechaEdicion(rs.getDate("fecha_edicion"));
-                    docente.getDocente().setCantIngresos(rs.getInt("cantidad_ingresos"));
-                    docente.getCurso().setIdCurso(rs.getInt("idcurso"));
+                    Usuario docente = new Usuario();
+                    docente.setIdUsuario(rs.getInt(1));
+                    docente.setNombre(rs.getString(2));
+                    docente.setCorreo(rs.getString(3));
+                    docente.setFechaUltimo(rs.getDate(6));
+                    docente.setCantIngresos(rs.getInt(7));
+                    docente.setFechaRegistro(rs.getDate(8));
+                    docente.setFechaEdicion(rs.getDate(9));
                     listaDocentes.add(docente);
                 }
             }
@@ -195,6 +194,23 @@ public class DaoUsuario extends DaoBase{
         }
         return listaDocentes;
 
+    }
+
+    public ArrayList<Usuario> docentesSinCurso(){
+        ArrayList<Usuario> docentesSinCurso = new ArrayList<>();
+        String sql = "select * from usuario u inner join rol r on r.idrol = u.idrol where r.nombre='docente' and u.idusuario not in (select iddocente from curso_has_docente)";
+        try(Connection conn = getConnection();
+            ResultSet rs = conn.prepareStatement(sql).executeQuery()){
+            while(rs.next()){
+                Usuario usuario = new Usuario();
+                usuario.setIdUsuario(rs.getInt(1));
+                usuario.setNombre(rs.getString(2));
+                docentesSinCurso.add(usuario);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return docentesSinCurso;
     }
 
 

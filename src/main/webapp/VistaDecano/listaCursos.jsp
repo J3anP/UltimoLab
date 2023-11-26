@@ -6,123 +6,186 @@
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<html>
+<%@ page import="com.example.ultimolab.beans.Usuario" %>
+<%@ page import="com.example.ultimolab.beans.Curso" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="com.example.ultimolab.beans.CursoHasDocente" %>
+<%@ page import="com.example.ultimolab.daos.DaoCursoHasDocente" %>
+
+
+<% if (session.getAttribute("usuario") == null){ %>
+<!DOCTYPE html>
+<html lang="es">
 <head>
-    <title>Title</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-    <link rel="stylesheet" href="css/login_styles.css">
+    <meta charset="UTF-8">
+    <title>Sesión Finalizada</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        html,
-        body,
-        .intro {
-            height: 100%;
+        body {
+            background-color: #17202A;
+            color: white;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
         }
-
-        table td,
-        table th {
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            overflow: hidden;
+        .message {
+            text-align: center;
+            font-size: 42px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: 3px solid #fff;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.3);
+            margin-bottom: 20px;
         }
-
-        .mask-custom {
-            background: rgba(24, 24, 16, .2);
-            border-radius: 2em;
-            backdrop-filter: blur(25px);
-            border: 2px solid rgba(255, 255, 255, 0.05);
-            background-clip: padding-box;
-            box-shadow: 10px 10px 10px rgba(46, 54, 68, 0.03);
+        .register {
+            text-align: center;
+        }
+        .register a {
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .register a:hover {
+            color: lightgray;
         }
     </style>
 </head>
 <body>
-<section class="intro">
-    <div class="bg-image h-100" style="background-image: url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBw0NDw8NDQ0NDQ0NDw8NDQ0NDQ8NDQ0NFREWFhURFRUYHSggGBolGxUVITEhJSk3Ljo6Fx8zODMtNygtLjcBCgoKDQ0NDw8PFSsZFRkrKzctNysrKy03Ky0rNy0rNysrKy0tLSsrKysrKystKysrKysrKysrKysrKysrKysrK//AABEIAMkA+wMBIgACEQEDEQH/xAAYAAEBAQEBAAAAAAAAAAAAAAABAAIDB//EACMQAQEBAAEEAQQDAAAAAAAAAAARARICQcHwMSGRsdFRgaH/xAAXAQEBAQEAAAAAAAAAAAAAAAAAAQID/8QAFhEBAQEAAAAAAAAAAAAAAAAAABEB/9oADAMBAAIRAxEAPwDw5FLECKIBFEAilgEUQCKIBFEAiiARRAIogEUQCKIBFEAiiARSQCKIIxFoEUKARFAFDFBBFDDACMUABqKEKymoYQrKaihCshuCEKA3BCFZJigUCNRQGYmoIAiKFChQFQmDNEUMUWAijUUIlZTcUIViGNQxYlYijcUIVmKNxRYViKNxQhWIo3FCFYijcUIViKNxQhWII6QbhCsRRuCJFrMEbihCsRRuCJCsxQxQi1rMUazFG4zRmKNRQiVmGNRRYlEUazDCFYhjUMWJWIo6RZ0kKxxXF0izFiVjiuLedKhCsb0qOnE8VhXKKOkXEhXOCOvEbiQrnFHSCEK5wR03FEi1zijcUIVz3FG9wRItYg10giRaoUY0iwxQ5giizCcxYM5jUWZ5OYsTdUW4YYsZozFjWYosKNxRrcMIlZzDDmFYlZijUSwrHExrcEIVnMG43BuJFrMUaiiQrnuLca3PytSKxBG9/YhFrO4I1EkWsYI3GdZio5gII4GuzWJqhzEVxAcKzVQ4UVRYlTVQb5OZ9FvloQYjmnFKIocUEEUa/gAMZb7sihYdCKyNa0IrPb7hpnUXFgMCAz4Ea7BGmDnb3uy0yqaxhpU0tM1rGkWnAs+RGz0sVrFQ4Qq0h3y0zhohaximqHDrNO6qEVVkGr9Ro35CKdHdDUUbi3FRUVTyNw0bqKMCwVFSXv8AgRXM1nDjCtILN/CjTVYpq0aqwVZq1I3T06xWs3yqbjVOsU8lqRrC51qrUjVNYqpUjpVusU1aRpmjNVSjVFZqop3RRu+/cag0M/Y0YlWHRRRulWHBRRfazVh3VRo9+UqsZqrOaqzW43TWEVI2c1iqrUjos1inNWkbpzt/bnWs0qNZprFWatSN01zppSN1ZrFWatI6bprnVSpG81VzzTSkaqrFVKsavgbooqUjVGaKM1KsaorNVKNUM1UWFVmqpSOeaWU51tqqsmrRrEyqUbWazVmrUjdNYqq1I3VWKaUjVNYqpSN1VirNWkbprFVKkap3WKqUjVVYqpVjdFZqqUjVVZopSNVViqlWNVVmipSNUUUJVgxBVlqGmsoI1VWVQjVVZpokaqrNVUjVVZqpSN1ViqlI3VWaqVI1VWUUjVVZVKRqqsqlIaqKKVY1UzVQKFVQNVFFCNUUIWBBIpqoShpZQNJlA0magaQQFBAUEBQQFBAUEBQQFBAUADQFVA1BACEwFBAUEtCgihSxFEklEkgSSBJIEkgSSBJIEkgSQQKCKFBFH//Z');">
-        <div class="mask d-flex align-items-center h-100">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-12">
-                        <div class="card mask-custom">
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-borderless text-white mb-0">
-                                        <thead>
-                                        <tr>
-                                            <th scope="col">EMPLOYEES</th>
-                                            <th scope="col">POSITION</th>
-                                            <th scope="col">CONTACTS</th>
-                                            <th scope="col">AGE</th>
-                                            <th scope="col">ADDRESS</th>
-                                            <th scope="col">SALARY</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr>
-                                            <th scope="row">Tiger Nixon</th>
-                                            <td>System Architect</td>
-                                            <td>tnixon12@example.com</td>
-                                            <td>61</td>
-                                            <td>Edinburgh</td>
-                                            <td>$320,800</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">Sonya Frost</th>
-                                            <td>Software Engineer</td>
-                                            <td>sfrost34@example.com</td>
-                                            <td>23</td>
-                                            <td>Edinburgh</td>
-                                            <td>$103,600</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">Jena Gaines</th>
-                                            <td>Office Manager</td>
-                                            <td>jgaines75@example.com</td>
-                                            <td>30</td>
-                                            <td>London</td>
-                                            <td>$90,560</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">Quinn Flynn</th>
-                                            <td>Support Lead</td>
-                                            <td>qflyn09@example.com</td>
-                                            <td>22</td>
-                                            <td>Edinburgh</td>
-                                            <td>$342,000</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">Charde Marshall</th>
-                                            <td>Regional Director</td>
-                                            <td>cmarshall28@example.com</td>
-                                            <td>36</td>
-                                            <td>San Francisco</td>
-                                            <td>$470,600</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">Haley Kennedy</th>
-                                            <td>Senior Marketing Designer</td>
-                                            <td>hkennedy63@example.com</td>
-                                            <td>43</td>
-                                            <td>London</td>
-                                            <td>$313,500</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">Tatyana Fitzpatrick</th>
-                                            <td>Regional Director</td>
-                                            <td>tfitzpatrick00@example.com</td>
-                                            <td>19</td>
-                                            <td>Warsaw</td>
-                                            <td>$385,750</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <div class="message">
+                <p>Sesión Finalizada</p>
             </div>
+            <p class="register">
+                La sesión ha finalizado<br>
+                <a href="login">Regresar</a>
+            </p>
         </div>
     </div>
-</section>
+</div>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
+
+<% } else { %>
+<% Usuario usuario = (Usuario) session.getAttribute("usuario"); %>
+<% Curso curso = (Curso) session.getAttribute("curso"); %>
+<% ArrayList<Curso> listaCursos = (ArrayList<Curso>) request.getAttribute("listaCursos"); %>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista Cursos</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #141e30;
+        }
+        .table {
+            background-color: #17202A;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">PUCP</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="decanoCurso?action=lista">Cursos</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="decanoDocente?action=lista">Docentes</a>
+            </li>
+        </ul>
+        <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle mr-2" type="button" id="opcionesDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Opciones
+            </button>
+            <div class="dropdown-menu" aria-labelledby="opcionesDropdown">
+                <a class="dropdown-item" href="#">Opción 1</a>
+                <a class="dropdown-item" href="#">Opción 2</a>
+                <a class="dropdown-item" href="#">Opción 3</a>
+            </div>
+        </div>
+        <div>
+            <button type="button" style="padding-top: 2px" class="btn btn-lg war-btn"><a href="decanoCurso?action=formCrear" class="text-white">Registrar Curso</a></button>
+        </div>
+        <a href="#" class="btn btn-outline-light">Logout</a>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Codigo</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Docente</th>
+                    <th scope="col">Fecha registro</th>
+                    <th scope="col">Fecha edición</th>
+                    <th scope="col">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <%if(!(listaCursos.isEmpty())){%>
+                <%int i=1; %>
+                <% for (Curso cur:listaCursos) {%>
+                <tr>
+                    <td><%=i%></td>
+                    <td><%=cur.getCodigo()%></td>
+                    <td><%=cur.getNombre()%></td>
+                    <td><%=new DaoCursoHasDocente().getNombreDocentePorCurso(cur.getIdCurso())%></td>
+                    <td><%=cur.getFechaRegistro()%></td>
+                    <td><%=cur.getFechaEdicion()%></td>
+                    <td>
+                        <a href="decanoCurso?action=editar&idcurso=<%=cur.getIdCurso()%>" class="text-secondary mr-2">
+                            Editar
+                        </a>
+                        <a href="decanoCurso?action=borrar&idcurso=<%=cur.getIdCurso()%>" class="text-danger">
+                            Borrar
+                        </a>
+                    </td>
+                </tr>
+                <%i++;%>
+                <%}%>
+
+                <%} else {%>
+                <tr>
+                    <td colspan="11">
+                        No hay cursos registrados
+                    </td>
+                </tr>
+                <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+
+<%}%>

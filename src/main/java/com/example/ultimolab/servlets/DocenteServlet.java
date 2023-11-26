@@ -96,9 +96,9 @@ public class DocenteServlet extends HttpServlet {
                 session.setAttribute("usuario",daoUsuario.obtenerUsuario(usuario.getIdUsuario()));
 
                 response.sendRedirect("docente?action=lista");
-
                 break;
             case "editar":
+
                 String id = request.getParameter("idevaluacion") == null? "lista" : request.getParameter("idevaluacion");
                 evaluacionId = Integer.parseInt(id);
                 String nuevoNombre = request.getParameter("nombre");

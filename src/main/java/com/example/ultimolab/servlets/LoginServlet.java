@@ -33,6 +33,7 @@ public class LoginServlet extends HttpServlet {
         DaoUsuario daoUsuario = new DaoUsuario();
         switch (action){
             case "default":
+                //No va nada
                 break;
             case "login":
                 String correoInput = request.getParameter("correo");
@@ -52,7 +53,7 @@ public class LoginServlet extends HttpServlet {
                     }else if(usuario.getRol().getNombre().equals("decano")){
                         session.setAttribute("usuario", usuario);
                         session.setMaxInactiveInterval(1800);
-                        response.sendRedirect("/UltimoLab/decano");
+                        response.sendRedirect("/UltimoLab/decanoDocente");
                         daoUsuario.actualizarIngreso(usuario.getIdUsuario());
                     }else{
                         //Dado que solo piden el flujo para Docente y Decano por motivos de prueba los demás los considero no presentes

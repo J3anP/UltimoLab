@@ -1,6 +1,7 @@
 package com.example.ultimolab.daos;
 import com.example.ultimolab.beans.Curso;
 import com.example.ultimolab.beans.CursoHasDocente;
+import com.example.ultimolab.beans.Facultad;
 import com.example.ultimolab.daos.DaoCursoHasDocente;
 import com.example.ultimolab.beans.Usuario;
 
@@ -35,8 +36,8 @@ public class DaoCurso extends DaoBase{
         }
         return curso;
     }
-    public ArrayList<Curso> listarCursosDocente(int idDocente){//Editar esto porque va en la vista de Decano
-        //Además falta validar que solo esten los cursos que pertenecen a la facultad
+    public ArrayList<Curso> listarCursosDocente(int idDocente){
+
         DaoCursoHasDocente daoCursoHasDocente = new DaoCursoHasDocente();
         ArrayList<Curso> cursos = daoCursoHasDocente.obtenerCursosPorDocente(idDocente);
 
@@ -83,7 +84,7 @@ public class DaoCurso extends DaoBase{
         DaoSemestre daoSemestre = new DaoSemestre();
 
         if(daoSemestre.obtenerSemestre(idSemestre).getHabilitado()){
-            sql = "update curso_has_docente set iddocente = 0 where idcurso = ?";
+            sql = "delete from curso_has_docente where idcurso=?";
             try(Connection conn=getConnection(); PreparedStatement pstmt= conn.prepareStatement(sql)){
                 pstmt.setInt(1,idCurso);
                 pstmt.executeUpdate();
@@ -101,21 +102,27 @@ public class DaoCurso extends DaoBase{
 
     }
 
-    public ArrayList<CursoHasDocente> listaCursos(int idFacultad){
-        ArrayList<CursoHasDocente> listaCursos = new ArrayList<>();
-        String sql = "select * from curso c left join curso_has_docente chd on chd.idcurso = c.idcurso where c.id_facultad = ?";
+    public ArrayList<Curso> listaCursos(int idDecano){
+        ArrayList<Curso> listaCursos = new ArrayList<>();
+        DaoFacultad daoFacultad =  new DaoFacultad();
+        String sql = "select * from curso c inner join facultad f on c.idfacultad = f.idfacultad inner join facultad_has_decano fhd on fhd.idfacultad = f.idfacultad where fhd.iddecano = ?";
         try(Connection conn=this.getConnection();
             PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setInt(1,idDecano);
             try(ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    CursoHasDocente curso = new CursoHasDocente();
+                    Curso curso = new Curso();
+                    Facultad facultad = new Facultad();
 
-                    curso.getCurso().setIdCurso(rs.getInt("idcurso"));
-                    curso.getCurso().setCodigo(rs.getString("codigo"));
-                    curso.getCurso().setNombre(rs.getString("nombre"));
-                    curso.getCurso().setFechaRegistro(rs.getDate("fecha_registro"));
-                    curso.getCurso().setFechaEdicion(rs.getDate("fecha_edicion"));
-                    curso.getDocente().setIdUsuario(rs.getInt("iddocente"));
+                    curso.setIdCurso(rs.getInt("idcurso"));
+                    curso.setCodigo(rs.getString("codigo"));
+                    curso.setNombre(rs.getString("nombre"));
+                    facultad.setIdFacultad(rs.getInt("idfacultad"));
+                    facultad.setNombre(daoFacultad.obtenerFacultad(rs.getInt("idfacultad")).getNombre());
+                    curso.setFacultad(facultad);
+                    curso.setFechaRegistro(rs.getDate("fecha_registro"));
+                    curso.setFechaEdicion(rs.getDate("fecha_edicion"));
+
                     listaCursos.add(curso);
                 }
             }
@@ -123,6 +130,32 @@ public class DaoCurso extends DaoBase{
             throw new RuntimeException(e);
         }
         return listaCursos;
+    }
+    public void registrarCurso(String codigo, String nombre,int idDocente, int idDecano){
+        String sql = "";
+        DaoFacultadHasDecano daoFacultadHasDecano = new DaoFacultadHasDecano();
+        sql = "insert into curso(codigo,nombre,idfacultad,fecha_registro,fecha_edicion) value(?,?,?,now(),now())";
+        try(Connection conn=getConnection(); PreparedStatement pstmt= conn.prepareStatement(sql)){
+            pstmt.setString(1,codigo);
+            pstmt.setString(2,nombre);
+            pstmt.setInt(3,daoFacultadHasDecano.obtenerFacultadPorDecano(idDecano).getIdFacultad());
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        DaoCurso daoCurso = new DaoCurso();
+        int idCursoNuevo = daoCurso.obtenerIdCursoPorNombre(nombre);//El nombre del curso es único
+
+        sql = "insert into curso_has_docente(idcurso,iddocente) value(?,?)";
+        try(Connection conn=getConnection(); PreparedStatement pstmt= conn.prepareStatement(sql)){
+            pstmt.setInt(1,idCursoNuevo);
+            pstmt.setInt(2,idDocente);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     public Integer obtenerIdCursoPorNombre(String nombre){
@@ -141,6 +174,22 @@ public class DaoCurso extends DaoBase{
             throw new RuntimeException(e);
         }
         return idCurso;
+    }
+    public String obtenerCursoDocente(int idDocente){
+        String sql = "select * from curso c inner join curso_has_docente chd on c.idcurso = chd.idcurso where chd.iddocente= ?";
+        try(Connection conn = getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setInt(1,idDocente);
+            try(ResultSet rs = pstmt.executeQuery()){
+                if(rs.next()){
+                    return rs.getString("nombre");
+                }else{
+                    return "-----";
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
