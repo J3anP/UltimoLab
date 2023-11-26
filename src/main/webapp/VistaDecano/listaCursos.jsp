@@ -127,7 +127,7 @@
         <div>
             <button type="button" style="padding-top: 2px" class="btn btn-lg war-btn"><a href="decanoCurso?action=formCrear" class="text-white">Registrar Curso</a></button>
         </div>
-        <a href="#" class="btn btn-outline-light">Logout</a>
+        <a href="logout" class="btn btn-outline-light">Logout</a>
     </div>
 </nav>
 

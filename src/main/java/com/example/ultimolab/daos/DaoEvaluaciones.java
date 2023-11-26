@@ -2,6 +2,7 @@ package com.example.ultimolab.daos;
 
 import com.example.ultimolab.beans.Curso;
 import com.example.ultimolab.beans.Evaluaciones;
+import com.example.ultimolab.beans.Semestre;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -117,5 +118,45 @@ public class DaoEvaluaciones extends DaoBase{
                 throw new RuntimeException(e);
             }
         }
+    }
+    public ArrayList<Evaluaciones> listaEvPorSemestre(int idSemestre, int idDocente){
+        DaoCurso daoCurso = new DaoCurso();
+        DaoSemestre daoSemestre = new DaoSemestre();
+        ArrayList<Evaluaciones> listaEvaluaciones = new ArrayList<>();
+        String sql = "select * from evaluaciones e inner join curso c on e.idcurso = c.idcurso inner join curso_has_docente chd on c.idcurso = chd.idcurso where e.idsemestre = ? and chd.iddocente = ?";
+        try(Connection conn = getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setInt(1,idDocente);
+            pstmt.setInt(2,idSemestre);
+            try(ResultSet rs = pstmt.executeQuery()){
+                while(rs.next()){
+                    Evaluaciones eval = new Evaluaciones();
+                    Curso curso = new Curso();
+                    Semestre semestre = new Semestre();
+
+                    eval.setIdEvaluaciones(rs.getInt("idevaluaciones"));
+                    eval.setNombreEstudiante(rs.getString("nombre_estudiante"));
+                    eval.setCodigoEstudiante(rs.getString("codigo_estudiante"));
+                    eval.setCorreoEstudiante(rs.getString("correo_estudiante"));
+                    eval.setNota(rs.getInt("nota"));
+
+                    curso.setIdCurso(rs.getInt(6));//idcurso
+                    curso.setNombre(daoCurso.obtenerCurso(rs.getInt(6)).getNombre());
+                    eval.setCurso(curso);
+
+                    semestre.setIdSemestre(rs.getInt(7));
+                    semestre.setNombre(daoSemestre.obtenerSemestre(rs.getInt(7)).getNombre());
+                    eval.setSemestre(semestre);
+
+                    eval.setFechaRegistro(rs.getDate(8));
+                    eval.setFechaEdicion(rs.getDate(9));
+
+                    listaEvaluaciones.add(eval);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return listaEvaluaciones;
     }
 }

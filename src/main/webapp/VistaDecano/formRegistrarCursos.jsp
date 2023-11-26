@@ -10,7 +10,7 @@
 <%@ page import="com.example.ultimolab.beans.Evaluaciones" %>
 <%@ page import="com.example.ultimolab.beans.Usuario" %>
 <%@ page import="com.example.ultimolab.beans.Curso" %>
-<%ArrayList<Usuario> docentesSinCurso = (ArrayList<Usuario>) request.getAttribute("docenteSinCurso");%>
+<%ArrayList<Usuario> docentesSinCurso = (ArrayList<Usuario>) request.getAttribute("docentesSinCurso");%>
 <%@ page import="java.util.ArrayList" %>
 
 <% if (session.getAttribute("usuario") == null){ %>
@@ -131,6 +131,15 @@
             background-color: #03a8f4;
             border-color: #03a8f4;
         }
+        select.custom-select {
+            background-color: #17202A;
+            color: white;
+            border-color: #17202A;
+        }
+        select.custom-select option {
+            background-color: #17202A;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -150,9 +159,9 @@
                     </div>
                     <div class="form-group">
                         <label for="docente">Docente a cargo</label>
-                        <select style="height: 55px;margin-top: 10px;" name="docente" id="docente" required>
+                        <select class="custom-select" name="iddocente" id="docente" required>
                             <%for(Usuario docenteSinCurso : docentesSinCurso){%>
-                            <option style="background-color: rgba(218,227,189,0.8); color: #000000" value="<%=docenteSinCurso.getIdUsuario()%>"><%=docenteSinCurso.getNombre()%></option>
+                            <option value="<%=docenteSinCurso.getIdUsuario()%>"><%=docenteSinCurso.getNombre()%></option>
                             <%}%>
                         </select>
                     </div>

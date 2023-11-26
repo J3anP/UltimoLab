@@ -24,7 +24,7 @@ public class DocenteServlet extends HttpServlet {
         DaoEvaluaciones daoEvaluaciones = new DaoEvaluaciones();
         DaoCursoHasDocente daoCursoHasDocente = new DaoCursoHasDocente();
         DaoUsuario daoUsuario = new DaoUsuario();
-
+        DaoSemestre daoSemestre = new DaoSemestre();
         ArrayList<Evaluaciones>  listaEvaluaciones = new ArrayList<>();
         HttpSession session = request.getSession(false);
         Usuario usuario = (Usuario) session.getAttribute("usuario");//Recordar
@@ -45,6 +45,31 @@ public class DocenteServlet extends HttpServlet {
                 }else{
                     session.setAttribute("usuario",daoUsuario.obtenerUsuario(usuario.getIdUsuario()));
                     request.getRequestDispatcher("VistaDocente/noSession.jsp").forward(request, response);
+                }
+                break;
+            case "filtroSemestre":
+                boolean aplicarFiltro = true;
+                String idSemestre = request.getParameter("idsemestre");
+
+                if(idSemestre!=null){
+                    try{
+                        if(!daoSemestre.haySemestre(Integer.parseInt(idSemestre))){
+                            aplicarFiltro=false;
+                        }
+                    }catch (NumberFormatException ex){
+                        aplicarFiltro=false;
+                    }
+                }else{
+                    aplicarFiltro = false;
+                }
+
+                if(aplicarFiltro){
+                    request.setAttribute("listaEvaluaciones",daoEvaluaciones.listaEvPorSemestre(Integer.parseInt(request.getParameter("idsemestre")),usuario.getIdUsuario()));
+                    request.setAttribute("semestreFil",Integer.parseInt(idSemestre));
+                    request.getRequestDispatcher("VistaDocente/lista.jsp").forward(request,response);
+                }else{
+                    request.setAttribute("listaEvaluaciones",daoEvaluaciones.listarEvaluaciones(usuario.getIdUsuario()));
+                    request.getRequestDispatcher("VistaDocente/lista.jsp").forward(request,response);
                 }
                 break;
             case "editar":

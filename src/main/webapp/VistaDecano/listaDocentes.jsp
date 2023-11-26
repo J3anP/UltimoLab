@@ -127,7 +127,7 @@
         <div>
             <button type="button" style="padding-top: 2px" class="btn btn-lg war-btn"><a href="decanoDocente?action=formCrear" class="text-white">Registrar Docente</a></button>
         </div>
-        <a href="#" class="btn btn-outline-light">Logout</a>
+        <a href="logout" class="btn btn-outline-light" >Logout</a>
     </div>
 </nav>
 <div class="container mt-4">
@@ -158,7 +158,7 @@
                     <td><%=doc.getCorreo()%></td>
                     <td><%=new DaoCurso().obtenerCursoDocente(doc.getIdUsuario())%></td>
                     <td><%=doc.getCantIngresos()%></td>
-                    <td><%=doc.getFechaUltimo()%></td>
+                    <td><%=doc.getFechaUltimo()==null?"No registrado":doc.getFechaUltimo()%></td>
                     <td><%=doc.getFechaRegistro()%></td>
                     <td><%=doc.getFechaEdicion()%></td>
                     <td>

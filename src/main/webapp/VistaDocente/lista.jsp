@@ -10,7 +10,12 @@
 <%@ page import="com.example.ultimolab.beans.Evaluaciones" %>
 <%@ page import="com.example.ultimolab.beans.Usuario" %>
 <%@ page import="com.example.ultimolab.beans.Curso" %>
+<%@ page import="com.example.ultimolab.daos.DaoSemestre" %>
+<%@ page import="com.example.ultimolab.daos.DaoEvaluaciones" %>
+<%@ page import="com.example.ultimolab.beans.Semestre" %>
+<%@ page import="java.util.HashSet" %>
 <%@ page import="java.util.ArrayList" %>
+
 <!jsp:useBean type="java.util.ArrayList<!com.example.ultimolab.beans.CursoHasDocente>" scope="request" id="lista"/>
 
 <% if (session.getAttribute("usuario") == null){ %>
@@ -84,6 +89,15 @@
 <% Curso curso = (Curso) session.getAttribute("curso"); %>
 <!% Evaluaciones evaluacion = (Evaluaciones) session.getAttribute("evaluacion"); %>
 <% ArrayList<Evaluaciones> listaEvaluaciones = (ArrayList<Evaluaciones>) request.getAttribute("listaEvaluaciones"); %>
+<%int semestreSelectId= request.getAttribute("semestreFil")==null?0:(int) request.getAttribute("semestreFil");%>
+<%ArrayList<Semestre> listaSemestres = new ArrayList<>();
+    HashSet<Integer> idsSemestres = new HashSet<>();%>
+<%for(Evaluaciones eval : listaEvaluaciones){
+    idsSemestres.add(eval.getSemestre().getIdSemestre());
+}
+    for(int id : idsSemestres){
+        listaSemestres.add(new DaoSemestre().obtenerSemestre(id));
+    }%>
 
 <html lang="es">
 <head>
@@ -97,6 +111,15 @@
             background-color: #17202A;
             color: white;
         }
+        select.custom-select {
+            background-color: #17202A;
+            color: white;
+            border-color: #17202A;
+        }
+        select.custom-select option {
+            background-color: #17202A;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -104,22 +127,27 @@
 <div class="container mt-4">
     <div class="row">
         <div class="col">
-            <h1 class="text-center text-white mb-4">PUCP</h1>
+            <h1 class="text-center text-white display-4 mb-4 font-weight-bold">PUCP</h1>
             <div class="d-flex justify-content-between mb-3">
-                <div class="dropdown">
-                    <button class="btn btn-primary dropdown-toggle mr-2" type="button" id="opcionesDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Semestres
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="opcionesDropdown">
-                        <a class="dropdown-item" href="#">Opción 1</a>
-                        <a class="dropdown-item" href="#">Opción 2</a>
-                        <a class="dropdown-item" href="#">Opción 3</a>
+                <form class="mr-3" method="get" action="<%=request.getContextPath()%>/docente">
+                    <div class="form-group">
+                        <input type="hidden" name="action" value="filtroSemestre">
+                        <label for="idsemestre" class = "mb-0">Semestres:</label>
+                        <select class="custom-select" id="idsemestre" name ="idsemestre" required>
+                            <option>All</option>
+                            <%for(Semestre sem : listaSemestres){%>
+                            <option value="<%=sem.getIdSemestre()%>" <%if(semestreSelectId==sem.getIdSemestre()){%>selected<%}%>><%=sem.getNombre()%></option>
+                            <%}%>
+                        </select>
                     </div>
-                </div>
-                <div>
+                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                </form>
+                <div class ="mr-3">
                     <button type="button" style="padding-top: 2px" class="btn btn-lg war-btn"><a href="docente?action=formCrear" class="text-white">Registrar Evaluación</a></button>
                 </div>
-
+                <div class="mr-3">
+                    <a href="logout" class="btn btn-outline-light">Logout</a>
+                </div>
             </div>
             <table class="table">
                 <thead>
@@ -130,6 +158,7 @@
                     <th scope = "col">Correos</th>
                     <th scope = "col">Notas</th>
                     <th scope = "col">Curso</th>
+                    <th scope = "col">Semestre</th>
                     <th scope = "col">Fecha Registro</th>
                     <th scope = "col">Fecha Edicion</th>
                     <th scope = "col">Editar</th>
@@ -149,6 +178,7 @@
                     <td><%=eval.getCorreoEstudiante()%></td>
                     <td><%=eval.getNota()%></td>
                     <td><%=eval.getCurso().getNombre()%></td>
+                    <td><%=eval.getSemestre().getNombre()%></td>
                     <td><%=eval.getFechaRegistro()%></td>
                     <td><%=eval.getFechaEdicion()%></td>
                     <td>
